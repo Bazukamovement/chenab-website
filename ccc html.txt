@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chenab Contracts & Claims | Construction Dispute Advisory J&K</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Warm Neutrals -->
+    <!-- Application Structure Plan: A thematic, single-page scrolling application with a persistent top navigation bar. The flow guides the user from the company's identity (Hero, USP), to its offerings (interactive Services), the market context (interactive Market Analysis with charts and diagrams), and finally proof of expertise (Case Study portfolio). This non-linear, exploratory structure is chosen over a static report format to be more engaging for potential clients, allowing them to either scroll for a full narrative or jump directly to sections of interest, enhancing usability and information retention. -->
+    <!-- Visualization & Content Choices: 
+        - USP: Goal=Persuade, Method=HTML/CSS icons, Interaction=Hover, Justification=Visually breaks up text and reinforces key strengths.
+        - Services: Goal=Organize/Inform, Method=Clickable cards (JS toggle), Interaction=Click to reveal details, Justification=Reduces initial information overload from a long list, making services easily digestible.
+        - Market Trends: Goal=Compare, Method=Bar Chart (Chart.js), Interaction=Tooltips on hover, Justification=More impactful visualization of growth drivers than a simple list.
+        - Market Challenges: Goal=Organize/Show Relationships, Method=Interactive HTML/CSS grid, Interaction=Click to show details, Justification=Makes dense information explorable and highlights interconnectedness without a complex library.
+        - Case Studies: Goal=Demonstrate Value, Method=Card-based layout, Interaction=Click to expand/reveal details in a modal, Justification=Presents portfolio in a dynamic, engaging format that encourages exploration. 
+        - Service Recommender (LLM): Goal=Personalize/Guide, Method=Text input + LLM output, Interaction=Submit query, Justification=Provides direct service recommendations based on user's specific problem.
+        - Market Insights (LLM): Goal=Inform/Engage, Method=Text input + LLM output, Interaction=Submit query, Justification=Allows users to ask specific questions about the J&K market and get instant, context-aware answers. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F8F5F2; /* Warm Neutral Background */
+            color: #402E32; /* Dark Brown-Gray Text */
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link:hover, .nav-link.active {
+            color: #D97706; /* Amber Accent */
+            border-bottom-color: #D97706;
+        }
+        .service-card.active {
+            background-color: #C89F9C; /* Muted Rose */
+            color: #FFFFFF;
+            transform: translateY(-5px);
+        }
+        .case-study-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+        }
+        .modal-backdrop {
+            transition: opacity 0.3s ease-in-out;
+        }
+        .modal-content {
+            transition: transform 0.3s ease-in-out;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        @media (max-width: 768px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #D97706;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        /* Custom styles for background images and overlays */
+        .hero-background {
+            background-image: url('https://placehold.co/1920x800/D4CEC7/402E32?text=Highrise+Construction');
+            background-size: cover;
+            background-position: center;
+        }
+        .market-chart-background {
+            background-image: url('https://placehold.co/1200x600/E8E3DF/402E32?text=Construction+Growth');
+            background-size: cover;
+            background-position: center;
+        }
+        .portfolio-background {
+            background-image: url('https://placehold.co/1920x800/D4CEC7/402E32?text=Project+Success');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Header & Navigation -->
+    <header id="header" class="bg-[#F8F5F2]/80 backdrop-blur-sm sticky top-0 z-50 shadow-sm">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-2xl font-bold text-[#402E32]">Chenab<span class="text-amber-600">.</span></a>
+            <nav class="hidden md:flex space-x-8">
+                <a href="#services" class="nav-link font-medium pb-1">Services</a>
+                <a href="#market" class="nav-link font-medium pb-1">Market Analysis</a>
+                <a href="#portfolio" class="nav-link font-medium pb-1">Portfolio</a>
+                <a href="#contact" class="nav-link font-medium pb-1">Contact</a>
+            </nav>
+            <button id="mobile-menu-button" class="md:hidden text-2xl">☰</button>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden px-6 pb-4">
+            <a href="#services" class="block py-2 text-center nav-link">Services</a>
+            <a href="#market" class="block py-2 text-center nav-link">Market Analysis</a>
+            <a href="#portfolio" class="block py-2 text-center nav-link">Portfolio</a>
+            <a href="#contact" class="block py-2 text-center nav-link">Contact</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section id="hero" class="relative py-20 md:py-32 bg-cover bg-center hero-background">
+            <div class="absolute inset-0 bg-white bg-opacity-70"></div>
+            <div class="container mx-auto px-6 text-center relative z-10">
+                <h1 class="text-4xl md:text-6xl font-bold text-[#402E32] leading-tight mb-4">Navigating Construction Disputes in Jammu & Kashmir</h1>
+                <p class="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto">Your trusted partner for expert, impartial advisory that mitigates risks, fosters project success, and achieves equitable resolutions.</p>
+            </div>
+        </section>
+
+        <!-- USP Section -->
+        <section id="usp" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold">Our Unique Advantage</h2>
+                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">We combine global best practices with deep local insight, offering unparalleled expertise in the J&K construction landscape.</p>
+                </div>
+                <div class="grid md:grid-cols-3 gap-8 text-center">
+                    <div class="bg-white p-8 rounded-lg shadow-sm">
+                        <div class="text-4xl text-amber-600 mb-4">📍</div>
+                        <h3 class="text-xl font-semibold mb-2">Specialized, Localized Expertise</h3>
+                        <p class="text-gray-600">Tailored solutions for the unique regulatory, logistical, and cultural landscape of J&K.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-sm">
+                        <div class="text-4xl text-amber-600 mb-4">🤝</div>
+                        <h3 class="text-xl font-semibold mb-2">Proactive Risk Mitigation</h3>
+                        <p class="text-gray-600">Our commitment is to claims avoidance and efficient dispute resolution, saving you time and money.</p>
+                    </div>
+                    <div class="bg-white p-8 rounded-lg shadow-sm">
+                        <div class="text-4xl text-amber-600 mb-4">📈</div>
+                        <h3 class="text-xl font-semibold mb-2">Maximizing Project Value</h3>
+                        <p class="text-gray-600">We ensure practical, effective, and contextually relevant solutions that protect your bottom line.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Services Section -->
+        <section id="services" class="py-16 bg-white">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold">Our Core Services</h2>
+                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">We offer a comprehensive suite of services covering the entire project lifecycle. Click a category to explore the specific services we provide.</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <button data-service="advisory" class="service-card text-left p-6 bg-gray-100 rounded-lg shadow-sm cursor-pointer transition-all duration-300">
+                        <h3 class="font-bold text-lg">Pre-Dispute/Advisory</h3>
+                        <p class="text-sm mt-1">Proactive strategies to avoid conflicts.</p>
+                    </button>
+                    <button data-service="analysis" class="service-card text-left p-6 bg-gray-100 rounded-lg shadow-sm cursor-pointer transition-all duration-300">
+                        <h3 class="font-bold text-lg">Delay & Disruption Analysis</h3>
+                        <p class="text-sm mt-1">Forensic analysis of project schedules.</p>
+                    </button>
+                    <button data-service="quantum" class="service-card text-left p-6 bg-gray-100 rounded-lg shadow-sm cursor-pointer transition-all duration-300">
+                        <h3 class="font-bold text-lg">Quantum & Damages Assessment</h3>
+                        <p class="text-sm mt-1">Quantifying costs and damages.</p>
+                    </button>
+                    <button data-service="support" class="service-card text-left p-6 bg-gray-100 rounded-lg shadow-sm cursor-pointer transition-all duration-300">
+                        <h3 class="font-bold text-lg">Dispute Resolution Support</h3>
+                        <p class="text-sm mt-1">Expert support for formal proceedings.</p>
+                    </button>
+                </div>
+                <div id="service-details" class="bg-white p-8 rounded-lg shadow-inner min-h-[250px] transition-opacity duration-500">
+                    <!-- Service details will be injected here by JS -->
+                </div>
+
+                <div class="mt-12 p-8 bg-amber-50 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold text-center mb-4">✨ Service Recommender</h3>
+                    <p class="text-center text-gray-700 mb-6">Describe your construction dispute or challenge below, and our AI-powered tool will suggest relevant services from Chenab Contracts & Claims.</p>
+                    <textarea id="service-query-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-amber-500 focus:border-amber-500 resize-y min-h-[100px] mb-4 text-gray-800" placeholder="e.g., My project is delayed due to unexpected ground conditions, and the client is demanding liquidated damages."></textarea>
+                    <button id="get-service-suggestions" class="w-full bg-amber-600 hover:bg-amber-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        Get Service Suggestions ✨
+                        <span id="service-loading-spinner" class="loading-spinner ml-3 hidden"></span>
+                    </button>
+                    <div id="service-suggestions-output" class="mt-6 p-4 bg-white rounded-lg shadow-inner min-h-[50px] text-gray-700">
+                        <p class="text-center text-gray-500">Suggestions will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Market Analysis Section -->
+        <section id="market" class="py-16">
+            <div class="container mx-auto px-6">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold">The J&K Construction Dispute Sector</h2>
+                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Understanding the unique trends, challenges, and opportunities in the Jammu & Kashmir construction market is key to navigating disputes effectively.</p>
+                </div>
+                
+                <div class="relative bg-white rounded-lg shadow-md p-6 md:p-8 market-chart-background">
+                    <div class="absolute inset-0 bg-white bg-opacity-70"></div>
+                    <div class="relative z-10">
+                        <h3 class="text-2xl font-semibold text-center mb-6">Market Trends & Growth Drivers</h3>
+                        <p class="text-center text-gray-600 mb-8">The construction sector in J&K is experiencing significant growth, driven by key government and private initiatives. This chart highlights the relative impact of these drivers, which in turn increases the volume and complexity of contracts and potential disputes.</p>
+                        <div class="chart-container">
+                            <canvas id="trendsChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-16">
+                     <h3 class="text-2xl font-semibold text-center mb-6">Challenges & Opportunities</h3>
+                     <p class="text-center text-gray-600 mb-8">Navigating the J&K market requires a deep understanding of its unique challenges. However, these challenges also present significant opportunities for specialized firms that can provide expert guidance and build local capacity.</p>
+                    <div class="grid lg:grid-cols-2 gap-12 items-start">
+                        <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                            <h4 class="font-bold text-xl mb-4 text-center">Key Challenges</h4>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="challenge-item cursor-pointer p-4 bg-red-50 border border-red-200 rounded-lg text-center hover:bg-red-100 transition" data-challenge="legal">Regulatory & Legal</div>
+                                <div class="challenge-item cursor-pointer p-4 bg-yellow-50 border border-yellow-200 rounded-lg text-center hover:bg-yellow-100 transition" data-challenge="info">Access to Information</div>
+                                <div class="challenge-item cursor-pointer p-4 bg-blue-50 border border-blue-200 rounded-lg text-center hover:bg-blue-100 transition" data-challenge="talent">Local Talent Pool</div>
+                                <div class="challenge-item cursor-pointer p-4 bg-purple-50 border border-purple-200 rounded-lg text-center hover:bg-purple-100 transition" data-challenge="culture">Business Practices</div>
+                                <div class="challenge-item cursor-pointer p-4 bg-gray-100 border border-gray-200 rounded-lg text-center hover:bg-gray-200 transition col-span-2" data-challenge="infra">Connectivity & Security</div>
+                            </div>
+                            <div id="challenge-details" class="mt-6 p-4 bg-gray-50 rounded-md min-h-[100px] text-gray-700">
+                                <p class="font-semibold">Click a challenge above to see details.</p>
+                            </div>
+                        </div>
+                         <div class="bg-white rounded-lg shadow-md p-6 md:p-8">
+                            <h4 class="font-bold text-xl mb-4 text-center">Key Opportunities</h4>
+                            <ul class="space-y-3 list-inside list-disc text-gray-700">
+                                <li><span class="font-semibold">Untapped Market:</span> Significant demand-supply gap for localized dispute advisory expertise.</li>
+                                <li><span class="font-semibold">Growing Project Pipeline:</span> Government infrastructure push guarantees a high volume of projects and potential disputes.</li>
+                                <li><span class="font-semibold">Industry Professionalization:</span> Increasing demand for professional claims management and risk mitigation.</li>
+                                <li><span class="font-semibold">Arbitration Focus:</span> Modern contracts emphasize arbitration, creating a need for specialized advisors.</li>
+                                <li><span class="font-semibold">Proactive Risk Management:</span> Opportunity to offer claims avoidance services, saving clients significant costs.</li>
+                                <li><span class="font-semibold">Capacity Building:</span> Partner with local firms and bodies to train a new generation of professionals.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-12 p-8 bg-teal-50 rounded-lg shadow-md">
+                    <h3 class="text-2xl font-semibold text-center mb-4">✨ J&K Market Insights</h3>
+                    <p class="text-center text-gray-700 mb-6">Ask a question about the construction dispute market in Jammu & Kashmir.</p>
+                    <textarea id="market-query-input" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-teal-500 focus:border-teal-500 resize-y min-h-[100px] mb-4 text-gray-800" placeholder="e.g., How does the regulatory environment in J&K impact project timelines?"></textarea>
+                    <button id="get-market-insights" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-3 px-6 rounded-lg transition-colors duration-300 flex items-center justify-center">
+                        Get Insights ✨
+                        <span id="market-loading-spinner" class="loading-spinner ml-3 hidden"></span>
+                    </button>
+                    <div id="market-insights-output" class="mt-6 p-4 bg-white rounded-lg shadow-inner min-h-[50px] text-gray-700">
+                        <p class="text-center text-gray-500">Insights will appear here.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Portfolio Section -->
+        <section id="portfolio" class="relative py-16 bg-cover bg-center portfolio-background">
+            <div class="absolute inset-0 bg-white bg-opacity-70"></div>
+            <div class="container mx-auto px-6 relative z-10">
+                <div class="text-center mb-12">
+                    <h2 class="text-3xl font-bold">Proven Success: Our Portfolio</h2>
+                    <p class="mt-2 text-gray-600 max-w-2xl mx-auto">Explore our hypothetical case studies, which demonstrate our approach and the value we deliver across different project types and dispute scenarios.</p>
+                </div>
+                <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Case Study Cards will be injected here by JS -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer id="contact" class="bg-[#402E32] text-white">
+        <div class="container mx-auto px-6 py-12">
+            <div class="grid md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-bold">Chenab Contracts & Claims</h3>
+                    <p class="mt-2 text-gray-300">Your trusted partner in construction dispute advisory in Jammu & Kashmir.</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold">Quick Links</h4>
+                    <ul class="mt-2 space-y-1">
+                        <li><a href="#services" class="hover:text-amber-500 transition">Services</a></li>
+                        <li><a href="#market" class="hover:text-amber-500 transition">Market Analysis</a></li>
+                        <li><a href="#portfolio" class="hover:text-amber-500 transition">Portfolio</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold">Disclaimer</h4>
+                    <p class="text-sm text-gray-400 mt-2">This website is for informational purposes only and does not constitute legal advice. Please consult with qualified legal professionals for specific situations.</p>
+                </div>
+            </div>
+            <div class="mt-8 border-t border-gray-700 pt-6 text-center text-sm text-gray-400">
+                <p>&copy; 2025 Chenab Contracts & Claims. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- Modal for Case Studies -->
+    <div id="modal-backdrop" class="modal-backdrop fixed inset-0 bg-black bg-opacity-70 z-50 hidden opacity-0">
+        <div id="modal-content" class="modal-content fixed inset-x-4 bottom-4 top-4 md:inset-auto md:top-1/2 md:left-1/2 bg-white rounded-lg shadow-2xl p-6 md:p-8 w-auto md:w-full max-w-3xl transform -translate-y-full md:-translate-x-1/2 md:-translate-y-1/2 overflow-y-auto">
+             <button id="modal-close-button" class="absolute top-4 right-4 text-2xl text-gray-500 hover:text-gray-800">&times;</button>
+            <div id="modal-body">
+                <!-- Modal content injected by JS -->
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const serviceData = {
+        advisory: {
+            title: 'Pre-Dispute/Advisory',
+            items: [
+                '<strong>Contract Review & Risk Assessment:</strong> Proactive analysis to identify potential dispute hotbeds.',
+                '<strong>Contract Administration Guidance:</strong> Advising on best practices for project documentation and record-keeping.',
+                '<strong>Claims Avoidance Strategies:</strong> Developing strategies to minimize disputes through proactive issue resolution.',
+                '<strong>Procedural Compliance Advisory:</strong> Guidance on adhering to contractual notice periods and requirements.'
+            ]
+        },
+        analysis: {
+            title: 'Delay & Disruption Analysis',
+            items: [
+                '<strong>Extension of Time (EOT) Claim Preparation:</strong> Developing and substantiating claims for additional time.',
+                '<strong>Time Impact Analysis (TIA):</strong> Forensic analysis to quantify the impact of delay events.',
+                '<strong>Critical Path Method (CPM) Analysis:</strong> Reviewing project schedules to identify critical activities.',
+                '<strong>Disruption Quantification:</strong> Assessing loss of productivity using techniques like the "measured mile" approach.'
+            ]
+        },
+        quantum: {
+            title: 'Quantum & Damages Assessment',
+            items: [
+                '<strong>Cost Overrun Analysis:</strong> Detailed assessment of additional costs due to changes, delays, or disruptions.',
+                '<strong>Loss & Expense Claim Preparation:</strong> Developing comprehensive claims for monetary compensation.',
+                '<strong>Valuation of Variations:</strong> Expert assessment of the fair value of changes to the contract scope.',
+                '<strong>Defect Liability & Rectification Costs:</strong> Quantification of costs associated with rectifying defects.'
+            ]
+        },
+        support: {
+            title: 'Dispute Resolution Support',
+            items: [
+                '<strong>Negotiation Support:</strong> Providing expert analysis and strategic advice for amicable settlements.',
+                '<strong>Mediation & Conciliation Support:</strong> Assisting clients in preparing for mediation or conciliation.',
+                '<strong>Arbitration Support:</strong> Preparing expert reports and assisting legal counsel for arbitration proceedings.',
+                '<strong>Expert Witness Services:</strong> Providing independent expert opinions in formal dispute resolution forums.'
+            ]
+        }
+    };
+    
+    const challengeData = {
+        legal: {
+            title: "Regulatory & Legal Landscape",
+            details: "Navigating specific local laws, ease of contract enforcement, and the efficiency of the judicial system in J&K can be complex. This requires deep familiarity with both national frameworks like the Indian Contract Act and local regulations."
+        },
+        info: {
+            title: "Access to Information/Records",
+            details: "Difficulties in obtaining comprehensive and reliable project documentation, especially for older projects, can make forensic analysis challenging. Robust record-keeping is paramount."
+        },
+        talent: {
+            title: "Local Talent Pool",
+            details: "There can be a scarcity of experienced delay analysts, quantity surveyors, and construction lawyers within J&K, often necessitating external expertise or intensive local training."
+        },
+        culture: {
+            title: "Cultural and Business Practices",
+            details: "Unique local business practices and cultural nuances can influence contract administration and dispute resolution. Building trust and understanding local negotiation styles is crucial."
+        },
+        infra: {
+            title: "Connectivity, Infrastructure & Security",
+            details: "Remote project sites, variable connectivity, and the regional security situation can impact on-site investigations, project continuity, and dispute resolution timelines, sometimes triggering force majeure clauses."
+        }
+    };
+
+    const caseStudyData = [
+        {
+            id: 'case1',
+            title: 'Delay Claim - Infrastructure Project',
+            project: 'National Highway Construction',
+            dispute: 'Employer-caused delay due to land acquisition issues and unforeseen geological conditions.',
+            services: ['Forensic Schedule Analysis (TIA)', 'Extension of Time (EOT) Claim Preparation', 'Negotiation Strategy Support'],
+            outcome: 'Successfully demonstrated entitlement to a 9-month EOT, avoiding over ₹1.5 Crore in liquidated damages and facilitating an amicable settlement.'
+        },
+        {
+            id: 'case2',
+            title: 'Disruption Claim - Commercial Building',
+            project: 'Mixed-Use Complex, Srinagar',
+            dispute: 'Significant loss of productivity due to numerous client-initiated variations and design changes.',
+            services: ['Disruption Assessment & Quantification (Measured Mile)', 'Loss and Expense Claim Preparation', 'Expert Report Preparation'],
+            outcome: 'Quantified and recovered over ₹85 Lakh in loss and expense for the client, preventing financial distress and recovering uncompensated costs.'
+        },
+        {
+            id: 'case3',
+            title: 'Contractual & Risk Advisory',
+            project: 'Hydropower Project, Doda',
+            dispute: 'Pre-contract risk review to mitigate future disputes related to geological conditions and force majeure events.',
+            services: ['Contract Analysis & Gap Identification', 'Risk Mitigation Strategy', 'Dispute Avoidance Mechanism Design'],
+            outcome: 'Enabled the client to finalize a robust EPC contract with balanced risk allocation, safeguarding the project’s budget and schedule from potential litigation.'
+        }
+    ];
+
+    // Mobile Menu
+    const mobileMenuButton = document.getElementById('mobile-menu-button');
+    const mobileMenu = document.getElementById('mobile-menu');
+    mobileMenuButton.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // Services Section
+    const serviceCards = document.querySelectorAll('.service-card');
+    const serviceDetailsContainer = document.getElementById('service-details');
+
+    function updateServiceDetails(serviceKey) {
+        const data = serviceData[serviceKey];
+        if (!data) return;
+        
+        serviceDetailsContainer.style.opacity = 0;
+
+        setTimeout(() => {
+            let content = `<h4 class="font-bold text-xl mb-4">${data.title}</h4>`;
+            content += '<ul class="space-y-3 list-inside list-disc text-gray-700">';
+            data.items.forEach(item => {
+                content += `<li>${item}</li>`;
+            });
+            content += '</ul>';
+            serviceDetailsContainer.innerHTML = content;
+            serviceDetailsContainer.style.opacity = 1;
+        }, 300);
+
+        serviceCards.forEach(card => {
+            card.classList.toggle('active', card.dataset.service === serviceKey);
+        });
+    }
+    
+    serviceCards.forEach(card => {
+        card.addEventListener('click', () => {
+            updateServiceDetails(card.dataset.service);
+        });
+    });
+
+    updateServiceDetails('advisory');
+
+    // LLM - Service Recommender
+    const serviceQueryInput = document.getElementById('service-query-input');
+    const getServiceSuggestionsButton = document.getElementById('get-service-suggestions');
+    const serviceSuggestionsOutput = document.getElementById('service-suggestions-output');
+    const serviceLoadingSpinner = document.getElementById('service-loading-spinner');
+
+    getServiceSuggestionsButton.addEventListener('click', async () => {
+        const promptText = serviceQueryInput.value.trim();
+        if (!promptText) {
+            serviceSuggestionsOutput.innerHTML = '<p class="text-red-500 text-center">Please describe your dispute to get suggestions.</p>';
+            return;
+        }
+
+        serviceLoadingSpinner.classList.remove('hidden');
+        getServiceSuggestionsButton.disabled = true;
+        serviceSuggestionsOutput.innerHTML = '<p class="text-center text-gray-500">Thinking...</p>';
+
+        const availableServices = `
+            Pre-Dispute/Advisory: Contract Review & Risk Assessment, Contract Administration Guidance, Claims Avoidance Strategies, Procedural Compliance Advisory.
+            Delay & Disruption Analysis: Extension of Time (EOT) Claim Preparation, Time Impact Analysis (TIA), Critical Path Method (CPM) Analysis, Disruption Quantification.
+            Quantum & Damages Assessment: Cost Overrun Analysis, Loss & Expense Claim Preparation, Valuation of Variations, Defect Liability & Rectification Costs.
+            Dispute Resolution Support: Negotiation Support, Mediation & Conciliation Support, Arbitration Support, Expert Witness Services.
+        `;
+
+        const prompt = `You are an expert in construction dispute advisory. A client describes their problem. Based on the services offered by 'Chenab Contracts & Claims' which are: ${availableServices}, identify the most relevant service category or specific services for their situation. Provide a brief, concise explanation of why each suggested service is relevant.
+
+Client Problem: ${promptText}
+
+Example Output Format:
+**Suggested Services:**
+* **[Service Category/Name]:** [Brief justification]
+* **[Service Category/Name]:** [Brief justification]
+`;
+        
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                serviceSuggestionsOutput.innerHTML = text;
+            } else {
+                serviceSuggestionsOutput.innerHTML = '<p class="text-red-500 text-center">Failed to get suggestions. Please try again.</p>';
+            }
+        } catch (error) {
+            serviceSuggestionsOutput.innerHTML = `<p class="text-red-500 text-center">An error occurred: ${error.message}.</p>`;
+        } finally {
+            serviceLoadingSpinner.classList.add('hidden');
+            getServiceSuggestionsButton.disabled = false;
+        }
+    });
+
+    // Market Trends Chart
+    const ctx = document.getElementById('trendsChart').getContext('2d');
+    const trendsChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['Govt. Infra Projects', 'Tourism Development', 'Private Investments', 'Contract Complexity'],
+            datasets: [{
+                label: 'Impact on Dispute Potential',
+                data: [90, 75, 70, 85],
+                backgroundColor: [
+                    'rgba(192, 132, 252, 0.6)', // purple-300
+                    'rgba(107, 114, 128, 0.6)', // gray-500
+                    'rgba(251, 191, 36, 0.6)', // amber-400
+                    'rgba(217, 119, 6, 0.6)' // amber-600
+                ],
+                borderColor: [
+                    'rgba(192, 132, 252, 1)',
+                    'rgba(107, 114, 128, 1)',
+                    'rgba(251, 191, 36, 1)',
+                    'rgba(217, 119, 6, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            indexAxis: 'y',
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return 'Relative Impact Score: ' + context.raw;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: 'Relative Impact Score'
+                    }
+                }
+            }
+        }
+    });
+    
+    // Market Challenges
+    const challengeItems = document.querySelectorAll('.challenge-item');
+    const challengeDetailsContainer = document.getElementById('challenge-details');
+    
+    challengeItems.forEach(item => {
+        item.addEventListener('click', () => {
+            const key = item.dataset.challenge;
+            const data = challengeData[key];
+            challengeDetailsContainer.innerHTML = `<h5 class="font-semibold mb-2">${data.title}</h5><p class="text-sm">${data.details}</p>`;
+        });
+    });
+
+    // LLM - Market Insights
+    const marketQueryInput = document.getElementById('market-query-input');
+    const getMarketInsightsButton = document.getElementById('get-market-insights');
+    const marketInsightsOutput = document.getElementById('market-insights-output');
+    const marketLoadingSpinner = document.getElementById('market-loading-spinner');
+
+    getMarketInsightsButton.addEventListener('click', async () => {
+        const questionText = marketQueryInput.value.trim();
+        if (!questionText) {
+            marketInsightsOutput.innerHTML = '<p class="text-red-500 text-center">Please ask a question to get insights.</p>';
+            return;
+        }
+
+        marketLoadingSpinner.classList.remove('hidden');
+        getMarketInsightsButton.disabled = true;
+        marketInsightsOutput.innerHTML = '<p class="text-center text-gray-500">Fetching insights...</p>';
+
+        const marketContext = `
+            Market Trends: Government infrastructure projects, tourism development, private investments are key growth drivers. Increasing awareness and complexity of construction contracts are leading to more formal dispute resolution (arbitration, adjudication).
+            Difficulties/Challenges:
+            Regulatory & Legal Landscape: Local laws, ease of contract enforcement, efficiency of judicial system in J&K. Indian Contract Act, Arbitration and Conciliation Act are relevant but local implementation varies.
+            Access to Information/Records: Difficulties in obtaining comprehensive and reliable project documentation.
+            Local Talent Pool: Scarcity of qualified professionals (delay analysts, quantity surveyors, construction lawyers).
+            Cultural and Business Practices: Unique local business practices and cultural nuances influence contract administration.
+            Connectivity and Infrastructure: Impact of remote locations and variable connectivity.
+            Security and Stability: Geopolitical situation can impact project continuity and dispute resolution timelines.
+            Opportunities: Untapped market, growing project pipeline, professionalization of industry, focus on arbitration, demand for proactive risk management, capacity building.
+        `;
+
+        const prompt = `You are an expert on the construction market in Jammu & Kashmir, India, particularly concerning disputes. A client has a question. Answer the question concisely, drawing upon the following context about the J&K construction market. If the answer is not directly available in the provided context, state that.
+
+Market Context: ${marketContext}
+
+Client Question: ${questionText}
+`;
+
+        try {
+            let chatHistory = [];
+            chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+            const payload = { contents: chatHistory };
+            const apiKey = "";
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+            
+            const response = await fetch(apiUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const result = await response.json();
+            
+            if (result.candidates && result.candidates.length > 0 &&
+                result.candidates[0].content && result.candidates[0].content.parts &&
+                result.candidates[0].content.parts.length > 0) {
+                const text = result.candidates[0].content.parts[0].text;
+                marketInsightsOutput.innerHTML = text;
+            } else {
+                marketInsightsOutput.innerHTML = '<p class="text-red-500 text-center">Failed to get insights. Please try again.</p>';
+            }
+        } catch (error) {
+            marketInsightsOutput.innerHTML = `<p class="text-red-500 text-center">An error occurred: ${error.message}.</p>`;
+        } finally {
+            marketLoadingSpinner.classList.add('hidden');
+            getMarketInsightsButton.disabled = false;
+        }
+    });
+    
+    // Portfolio & Modal
+    const portfolioContainer = document.querySelector('#portfolio .grid');
+    const modalBackdrop = document.getElementById('modal-backdrop');
+    const modalContent = document.getElementById('modal-content');
+    const modalBody = document.getElementById('modal-body');
+    const modalCloseButton = document.getElementById('modal-close-button');
+
+    caseStudyData.forEach(study => {
+        const card = document.createElement('div');
+        card.className = 'case-study-card bg-gray-50 p-6 rounded-lg shadow-sm cursor-pointer transition-all duration-300';
+        card.dataset.id = study.id;
+        card.innerHTML = `
+            <h3 class="font-bold text-xl text-amber-700">${study.title}</h3>
+            <p class="text-gray-500 text-sm mt-1 mb-4">${study.project}</p>
+            <p class="text-gray-700 leading-relaxed">${study.dispute.substring(0, 100)}...</p>
+            <span class="inline-block mt-4 text-amber-600 font-semibold hover:text-amber-800">View Details &rarr;</span>
+        `;
+        portfolioContainer.appendChild(card);
+    });
+
+    portfolioContainer.addEventListener('click', (e) => {
+        const card = e.target.closest('.case-study-card');
+        if (card) {
+            const caseId = card.dataset.id;
+            const study = caseStudyData.find(s => s.id === caseId);
+            if(study) {
+                openModal(study);
+            }
+        }
+    });
+
+    function openModal(study) {
+        modalBody.innerHTML = `
+            <h2 class="text-2xl md:text-3xl font-bold text-amber-700 mb-2">${study.title}</h2>
+            <p class="text-gray-500 mb-6">${study.project}</p>
+            <div class="space-y-6 text-gray-800">
+                <div>
+                    <h4 class="font-semibold text-lg border-b pb-1 mb-2">Nature of the Dispute</h4>
+                    <p>${study.dispute}</p>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg border-b pb-1 mb-2">Services Provided</h4>
+                    <ul class="list-disc list-inside space-y-1">
+                        ${study.services.map(s => `<li>${s}</li>`).join('')}
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="font-semibold text-lg border-b pb-1 mb-2">Outcome & Value Proposition</h4>
+                    <p>${study.outcome}</p>
+                </div>
+            </div>
+        `;
+        modalBackdrop.classList.remove('hidden');
+        setTimeout(() => {
+            modalBackdrop.classList.remove('opacity-0');
+            modalContent.classList.remove('-translate-y-full');
+            modalContent.classList.add('md:-translate-y-1/2'); // Adjust for desktop
+        }, 10);
+    }
+    
+    function closeModal() {
+        modalBackdrop.classList.add('opacity-0');
+        modalContent.classList.add('-translate-y-full');
+        modalContent.classList.remove('md:-translate-y-1/2');
+        setTimeout(() => {
+            modalBackdrop.classList.add('hidden');
+        }, 300);
+    }
+
+    modalCloseButton.addEventListener('click', closeModal);
+    modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) {
+            closeModal();
+        }
+    });
+
+    // Nav active state on scroll
+    const sections = document.querySelectorAll('main section');
+    const navLinks = document.querySelectorAll('header nav a');
+
+    window.addEventListener('scroll', () => {
+        let current = '';
+        sections.forEach(section => {
+            const sectionTop = section.offsetTop;
+            if (pageYOffset >= sectionTop - 60) {
+                current = section.getAttribute('id');
+            }
+        });
+
+        navLinks.forEach(link => {
+            link.classList.remove('active');
+            if (link.getAttribute('href').includes(current)) {
+                link.classList.add('active');
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
